@@ -10,42 +10,36 @@ var Storage = {
     this.setId += 1;
     return item;
   },
-  /*remove: function(id) { 
-    console.log("the items are", this.items);
-    var currentItem = this.items[id - 1];
-    console.log("clicked on", currentItem);
-    var currentIndexOfItem = this.items.indexOf(currentItem); //converts the item into its index value
-    console.log("I want to remove item", currentItem.id, ", which is", currentItem.name, ", since it is what I just clicked");
-    console.log(currentIndexOfItem);
-    this.items.splice(currentIndexOfItem, 1);
-    console.log("the items are now", this.items);
-    console.log("*****************************************");
-    return currentItem;
-  },*/
-  remove: function(id) {
+  remove: function(id) { //items/2
+  
+
+    var removeId = false;
+    for(var i = 0; i < this.items.length; i++) {
     
-    console.log("the items are", this.items);
-    var item = this.items[id];
-    var index = this.items.indexOf(item);//converts the item into its index value
-    if(id === index) {
-      console.log("clicked on", item.name);
-      this.items.splice(index, 1);
-      console.log("the items are now", this.items);
-      console.log("****************************");
-      return item;
-    } else {
-        item = this.items[id - 1];
-        console.log("clicked on", item.name);
-        index = this.items.indexOf(item);
-        this.items.splice(index, 1);
-        console.log("*****************************");
-        return item;
+      if(id == this.items[i].id) { //if 2 === items[2].id
+        removeId = id;
+        console.log("removeId is", removeId);
+        if(removeId !== false) {
+          this.items.splice(removeId, 1);
+        }
       }
-      
+    }
+    
+    console.log("after deletion, the items are:", this.items);
+    return removeId;
+    
+    
+  
+    
+    
   },
-  update: function(id) {
-    var index = this.items.indexOf(id);
-    this.items.splice(index, 1);
+  update: function(id, name) {
+    this.items.forEach(function(item) {
+        if(item.id === id) {
+          item.name = name;
+        }    
+    });
+    return name;
   }
 };
 
@@ -74,7 +68,6 @@ app.get('/items', jsonParser, function(request, response) {
     //console.log(body.name);
 });
 
-
 app.post('/items', jsonParser, function(request, response) {
     if (!('name' in request.body)) {
         return response.sendStatus(400);
@@ -85,27 +78,22 @@ app.post('/items', jsonParser, function(request, response) {
 });
 
 
-/*
-Create an endpoint that responds to a DELETE request to /items/:id
-If the item is succesfully deleted, the server should respond with a 200 OK status
-If an incorrect ID is supplied, your endpoint should fail gracefully, returning a 404 Not Found status and a JSON error message.
-*/
-
-
-app.delete('/items/:id', function(request, response, err) {
+app.delete('/items/:id', function(request, response, err) { //frontend gives the actual id for /:id
     var id = request.params.id;
-    var url = request.headers.host + request.url;
-    console.log(url);
-        if (id) {
-          id = storage.remove(id);
-          return response.status(200).json(id);
-        } else {
-              return response.status(404).json(err);
-          }
+    console.log('you clicked on item', '"'+id+'"');
+    //var url = request.headers.host + request.url;
+    if (id) {
+      id = storage.remove(id);
+      return response.status(200).json(id);
+    } else {
+        return response.status(404).json(err);
+      }
 });
 
 app.put('/items/:id', function(request, response, err) {
   var id = request.params.id;
+  var payload = request.body;
+  console.log(payload);
   if (id) {
           id = storage.update(id);
           return response.status(200).json(id);

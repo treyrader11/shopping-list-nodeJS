@@ -9,9 +9,9 @@ exports.log = function(request, response, next) {
 }
 
 exports.hello = function(request, response, next) {
-  response.write('Hello\n' + 'Trey');
-  response.end();
-  next();
+  //response.write('Hello\n' + 'Trey');
+  //response.end();
+  //next();
 }
 
 exports.getDate = function(req, res, next) {
@@ -20,3 +20,4 @@ exports.getDate = function(req, res, next) {
   console.log(greeting, text, new Date());
   next();
 }
+

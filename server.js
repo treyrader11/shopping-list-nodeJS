@@ -1,7 +1,7 @@
 
 var express = require('express');
 var bodyParser = require('body-parser');
-var jsonParser = bodyParser.json(); //parse payload into body. body is not there without this middleware
+var jsonParser = bodyParser.json(); //parse payload into body. body object is not there without this piece of middleware
 
 var Storage = {
   add: function(name) {
@@ -11,24 +11,21 @@ var Storage = {
     return item;
   },
   remove: function(id) { //items/2
-   
-   
     var removeId = false;
+    var returnItem = {}; //just make it a blank obj to match our test case
     for(var i = 0; i < this.items.length; i++) {
-    
       if(id == this.items[i].id) { //if 2 === items[2].id
-        removeId = i;
+        removeId = i; //2
       }
     }
-    
-      
     console.log("removeId is", removeId);
     if(removeId !== false) {
+        returnItem = this.items[removeId]; //take a copy of returnItem before returning.
         this.items.splice(removeId, 1);
     }
     console.log("after deletion, the items are:", this.items);
     console.log("*************");
-    return id;
+    return returnItem; //return back to our delete request handler so that it appears in our response.body
   },
   
   update: function(id, name) {
@@ -58,7 +55,7 @@ var createStorage = function() {
   return storage;
 };
 
-var storage = createStorage();
+var storage = createStorage(); //this gets exported
 
 storage.add('Broad beans');
 storage.add('Tomatoes');
@@ -87,7 +84,10 @@ app.get('/users/:username', function(request, response) {
 app.get('/users', jsonParser, function(request, response) {
     response.json(storage.users);
     var body = request.body;
-    console.log("the body:", body);
+    var header = response.headers;
+    var contentType = header;
+    console.log("the headers:", contentType);
+    
 });
 
 app.post('/items', jsonParser, function(request, response) { 
@@ -104,8 +104,8 @@ app.delete('/items/:id', function(request, response, err) { //frontend gives the
     console.log('you clicked on item', '"'+id+'"');
     //var url = request.headers.host + request.url;
     if (id) {
-      id = storage.remove(id);
-      return response.status(200).json(id);
+      var returnItem = storage.remove(id); //returnItem gets converted into an object here
+      return response.status(200).json(returnItem); //give us returnItem in our response.body
     } else {
         return response.status(404).json(err);
       }
@@ -114,15 +114,19 @@ app.delete('/items/:id', function(request, response, err) { //frontend gives the
 //the client sets the number for id
 app.put('/items/:id', jsonParser, function(request, response, err) {
   var id = request.params.id;
-  var payload = request.body;
-  console.log(payload);
+  //var payload = request.body;
+  var firstItem = request.body.name;
+  console.log(firstItem);
   if (id) {
-          id = storage.update(id);
-          return response.status(200).json(id);
-        } else {
-              return response.status(404).json(err);
-          }
+    returnItem = storage.update(id);
+    return response.status(200).json(id);
+  } else {
+        return response.status(404).json(err);
+  }
 });
 
 
 app.listen(process.env.PORT || 8080, process.env.IP);
+
+exports.app = app;
+exports.storage = storage;
